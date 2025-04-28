@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spanning Message Detector</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Spanning Message Detector</h1>
+      <p>Detect spam, scams, and phishing attempts in messages</p>
+    </header>
+
+    <main>
+      <div class="input-section">
+        <textarea id="messageInput" placeholder="Paste suspicious message here..."></textarea>
+        <button id="analyzeBtn">Analyze Message</button>
+      </div>
+
+      <div class="result-section hidden" id="resultSection">
+        <h2>Analysis Result</h2>
+        <div class="result-card">
+          <div class="result-header">
+            <span id="resultLabel" class="result-label">Not Spanning</span>
+            <span id="confidenceValue" class="confidence">0%</span>
+          </div>
+          <div class="confidence-bar">
+            <div id="confidenceBar" class="bar-fill"></div>
+          </div>
+          <div id="explanation" class="explanation"></div>
+        </div>
+      </div>
+
+      <div class="loading hidden" id="loading">
+        <div class="spinner"></div>
+        <p>Analyzing message...</p>
+      </div>
+    </main>
+
+    <footer>
+      <p>Detect BY AI </p>
+    </footer>
+  </div>
+  <script src="script.js"></script>
+</body>
+
+</html>
