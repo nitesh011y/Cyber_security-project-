@@ -28,6 +28,9 @@ STRICTLY return valid JSON format ONLY:
   "suggestions": string[]
 }
 
+if you got only single words like helo or generall words so its a clean code
+
+
 Examples:
 Good: {"is_spam":true,"is_phishing":false,"confidence":85,"reasons":["Contains 'win free prize'"],"language":"en","suggestions":["Mark as spam"]}
 Bad: "This looks like spam" (INVALID)
