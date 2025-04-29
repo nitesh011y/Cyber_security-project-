@@ -4,45 +4,74 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spanning Message Detector</title>
+  <title>AI Spam/Phishing Detector</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
   <div class="container">
     <header>
-      <h1>Spanning Message Detector</h1>
-      <p>Detect spam, scams, and phishing attempts in messages</p>
+      <h1>🛡️ AI Security Detector</h1>
+      <p>Detect spam & phishing in English/Hindi/Marathi</p>
     </header>
 
     <main>
-      <div class="input-section">
-        <textarea id="messageInput" placeholder="Paste suspicious message here..."></textarea>
-        <button id="analyzeBtn">Analyze Message</button>
-      </div>
+      <section class="input-section">
+        <textarea id="messageInput" placeholder="Paste suspicious message here..."
+          aria-label="Message to analyze"></textarea>
+        <button id="analyzeBtn" class="primary-btn">
+          <span class="btn-icon">🔍</span>
+          Analyze
+        </button>
+      </section>
 
-      <div class="result-section hidden" id="resultSection">
-        <h2>Analysis Result</h2>
-        <div class="result-card">
-          <div class="result-header">
-            <span id="resultLabel" class="result-label">Not Spanning</span>
-            <span id="confidenceValue" class="confidence">0%</span>
-          </div>
-          <div class="confidence-bar">
-            <div id="confidenceBar" class="bar-fill"></div>
-          </div>
-          <div id="explanation" class="explanation"></div>
-        </div>
-      </div>
-
-      <div class="loading hidden" id="loading">
+      <div id="loading" class="loading hidden">
         <div class="spinner"></div>
-        <p>Analyzing message...</p>
+        <p>Analyzing with AI...</p>
       </div>
+
+      <!-- <div id="errorBox" class="error-box hidden" role="alert"></div> -->
+
+      <section id="resultSection" class="result-section hidden">
+        <div class="result-card">
+          <h2>Analysis Result</h2>
+
+          <div class="threat-display">
+            <span id="threatType" class="threat-type">Analyzing...</span>
+            <span id="confidenceValue" class="confidence-value">0%</span>
+          </div>
+
+          <div class="confidence-meter">
+            <div class="confidence-labels">
+              <span>0%</span>
+              <span>50%</span>
+              <span>100%</span>
+            </div>
+            <div class="confidence-bar">
+              <div id="confidenceBar" class="bar-fill"></div>
+            </div>
+          </div>
+
+          <div id="languageBadge" class="language-badge">
+            <span class="badge-icon">🌐</span>
+            <span class="badge-text">Language: Detecting...</span>
+          </div>
+
+          <div class="reasons-box">
+            <h3>Detection Reasons</h3>
+            <ul id="reasonsList" class="reasons-list"></ul>
+          </div>
+
+          <div class="suggestions-box">
+            <h3>Safety Suggestions</h3>
+            <ul id="suggestionsList" class="suggestions-list"></ul>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer>
-      <p>Detect BY AI </p>
+      <p>Scan using Ai</p>
     </footer>
   </div>
   <script src="script.js"></script>

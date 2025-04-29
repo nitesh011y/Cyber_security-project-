@@ -1,59 +1,96 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const messageInput = document.getElementById('messageInput');
-    const analyzeBtn = document.getElementById('analyzeBtn');
-    const resultSection = document.getElementById('resultSection');
-    const loadingElement = document.getElementById('loading');
-    const resultLabel = document.getElementById('resultLabel');
-    const confidenceValue = document.getElementById('confidenceValue');
-    const confidenceBar = document.getElementById('confidenceBar');
-    const explanation = document.getElementById('explanation');
-  
-    analyzeBtn.addEventListener('click', async () => {
-      const message = messageInput.value.trim();
-      
-      if (!message) {
-        alert('Please enter a message to analyze');
-        return;
-      }
-  
-      loadingElement.classList.remove('hidden');
-      resultSection.classList.add('hidden');
-  
-      try {
-        const response = await fetch('/api/detect', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message })
-        });
-  
-        if (!response.ok) throw new Error('Analysis failed');
-        const data = await response.json();
-        displayResults(data);
-      } catch (error) {
-        console.error(error);
-        alert('Error analyzing message');
-      } finally {
-        loadingElement.classList.add('hidden');
-        resultSection.classList.remove('hidden');
-      }
-    });
-  
-    function displayResults(data) {
-      const isSpanning = data.is_spanning;
-      const confidence = Math.round(data.confidence);
-  
-      // Update UI
-      resultLabel.textContent = isSpanning ? 'Spanning' : 'Not Spanning';
-      resultLabel.className = `result-label ${isSpanning ? 'spanning' : 'not-spanning'}`;
-      confidenceValue.textContent = `${confidence}%`;
-      confidenceBar.style.width = `${confidence}%`;
-      confidenceBar.style.backgroundColor = isSpanning ? 'var(--danger)' : 'var(--success)';
-  
-      // Build explanation HTML
-      let explanationHTML = `<p>${data.explanation}</p>`;
-      if (data.reasons && data.reasons.length > 0) {
-        explanationHTML += '<ul>' + data.reasons.map(r => `<li>${r}</li>`).join('') + '</ul>';
-      }
-      explanation.innerHTML = explanationHTML;
+  // DOM Elements
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const messageInput = document.getElementById('messageInput');
+  const loadingElement = document.getElementById('loading');
+  const errorBox = document.getElementById('errorBox');
+  const resultSection = document.getElementById('resultSection');
+
+  analyzeBtn.addEventListener('click', analyzeMessage);
+
+  async function analyzeMessage() {
+    const message = messageInput.value.trim();
+    if (!message) {
+      showError("Please enter a message");
+      return;
     }
-  });
+
+    showLoading();
+    hideError();
+    hideResults();
+
+    try {
+      const response = await fetch('/api/detect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        // Use fallback data if available
+        const fallbackData = data.fallback || {
+          is_spam: false,
+          is_phishing: false,
+          confidence: 50,
+          reasons: ["Analysis service unavailable"],
+          suggestions: ["Try again later"]
+        };
+        displayResults(fallbackData);
+        throw new Error(data.error || "Service error");
+      }
+
+      displayResults(data);
+      
+    } catch (error) {
+      console.error("Analysis Error:", error);
+      showError(error.message || "Failed to analyze");
+    } finally {
+      hideLoading();
+    }
+  }
+
+  // UI Helpers
+  function showLoading() {
+    loadingElement.classList.remove('hidden');
+  }
+
+  function hideLoading() {
+    loadingElement.classList.add('hidden');
+  }
+
+  function showError(message) {
+    errorBox.textContent = message;
+    errorBox.classList.remove('hidden');
+  }
+
+  function hideError() {
+    errorBox.classList.add('hidden');
+  }
+
+  function hideResults() {
+    resultSection.classList.add('hidden');
+  }
+
+  function displayResults(data) {
+    // Update all result fields with null checks
+    document.getElementById('threatType').textContent = 
+      data.is_phishing ? "PHISHING 🚨" : 
+      data.is_spam ? "SPAM ⚠️" : "CLEAN ✅";
+    
+    document.getElementById('confidenceValue').textContent = 
+      `${data.confidence || 50}%`;
+    
+    document.getElementById('confidenceBar').style.width = 
+      `${data.confidence || 50}%`;
+    
+    document.getElementById('reasonsList').innerHTML = 
+      (data.reasons || []).map(r => `<li>${r}</li>`).join('');
+    
+    document.getElementById('suggestionsList').innerHTML = 
+      (data.suggestions || []).map(s => `<li>${s}</li>`).join('');
+
+    resultSection.classList.remove('hidden');
+  }
+});
