@@ -18,70 +18,126 @@ app.use(express.static('public'));
 
 // Enhanced prompt with JSON examples
 const PROMPT_TEMPLATE = `
-STRICTLY return valid JSON format ONLY:
+You are a security analyst detecting spam/phishing messages. Analyze the message and return STRICT JSON:
+
 {
   "is_spam": boolean,
   "is_phishing": boolean,
   "confidence": number (1-100),
+  "urls": {
+    "count": number,
+    "domains": string[],
+    "suspicious": boolean,
+    "reasons": string[]
+  },
   "reasons": string[],
   "language": "en"|"hi"|"mr",
   "suggestions": string[]
 }
 
-if you got only single words like helo or generall words so its a clean code
+## Classification Rules:
+1. PHISHING (if any):
+   - Requests credentials/personal data
+   - Contains suspicious links (see URL rules)
+   - Creates false urgency ("immediate action required")
+   - Mimics legitimate organizations
 
+2. SPAM (if any):
+   - Unsolicited promotional content
+   - Prize/giveaway offers
+   - No personal relevance
 
-Examples:
-Good: {"is_spam":true,"is_phishing":false,"confidence":85,"reasons":["Contains 'win free prize'"],"language":"en","suggestions":["Mark as spam"]}
-Bad: "This looks like spam" (INVALID)
+3. CLEAN:
+   - Normal professional communication
+   - Personal messages without commercial intent
+   - Single words/simple greetings
 
-Analyze: """{message}"""
+## URL Analysis Rules:
+1. Suspicious URLs:
+   - Domain impersonation (e.g., "microsoft.verify-security.com")
+   - Shortened links (bit.ly, tinyurl)
+   - IP addresses instead of domains
+   - Misspelled domains (micr0soft.com)
+   - HTTP links for sensitive actions
+   - Mismatched display vs actual URLs
 
-example 2: Security Alert – Unusual Activity Detected
+2. Clean URLs:
+   - Verified company domains
+   - HTTPS secure links
+   - Matching display/text URLs
 
-Dear [Employee Name],
+## Examples:
 
-We have detected a suspicious login attempt from an unrecognized device on your Microsoft 365 account:
+### Phishing Example:
+Input: "Your account will be locked! Verify now: security-microsoft.com/login"
+Output:
+{
+  "is_spam": false,
+  "is_phishing": true,
+  "confidence": 95,
+  "urls": {
+    "count": 1,
+    "domains": ["security-microsoft.com"],
+    "suspicious": true,
+    "reasons": ["Impersonates Microsoft domain"]
+  },
+  "reasons": [
+    "Creates false urgency",
+    "Contains credential request",
+    "Suspicious verification link"
+  ],
+  "language": "en",
+  "suggestions": [
+    "Do not click the link",
+    "Report as phishing"
+  ]
+}
 
-Time: 08:13 AM GMT
-Location: Prague, Czech Republic
-IP Address: 185.33.85.197
-Device: Windows 10 (Chrome)
+### Spam Example:
+Input: "Win a free iPhone! Click: bit.ly/win-apple"
+Output:
+{
+  "is_spam": true,
+  "is_phishing": false,
+  "confidence": 85,
+  "urls": {
+    "count": 1,
+    "domains": ["bit.ly"],
+    "suspicious": true,
+    "reasons": ["Shortened URL hides destination"]
+  },
+  "reasons": [
+    "Promotional content",
+    "Prize/giveaway offer"
+  ],
+  "language": "en",
+  "suggestions": [
+    "Mark as spam"
+  ]
+}
 
-For your protection, we have temporarily restricted access to your account until this activity is verified.
+### Clean Example:
+Input: "Hi John, meeting at 3pm tomorrow"
+Output:
+{
+  "is_spam": false,
+  "is_phishing": false,
+  "confidence": 99,
+  "urls": {
+    "count": 0,
+    "domains": [],
+    "suspicious": false,
+    "reasons": []
+  },
+  "reasons": [
+    "Normal professional communication"
+  ],
+  "language": "en",
+  "suggestions": []
+}
 
-Please confirm whether this was you by logging into our Secure Verification Portal below:
-
-🔐 Verify Recent Activity
-
-If no action is taken within the next 2 hours, a temporary hold will remain in place and a full security review will be initiated.
-
-Sincerely,
-Microsoft Security Center
-security.microsoft.com
-
-
-example 3: 
-Hi [Employee First Name],
-
-I hope you’re doing well. We’ve recently finalized the updated remote work and compensation policy for Q2 following last week’s executive leadership meeting.
-
-As part of this initiative, HR has rolled out personalized compensation review reports for all full-time staff. These documents include updates on role classification, bonus eligibility, and hybrid work status.
-
-You can access your report securely using your corporate credentials via the following HR portal:
-
-🔒 Access Compensation Review
-
-Please note, this document is confidential and access is restricted to your account only. The portal will remain open until Friday, 6 PM EST.
-
-Let me know if you face any access issues.
-
-Regards,
-Jane Sullivan
-HR Business Partner
-YourCompany Inc
-
-
+Now analyze this message:
+"""{message}"""
 `;
 
 app.post('/api/detect', async (req, res) => {
