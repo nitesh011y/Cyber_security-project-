@@ -1,20 +1,20 @@
-require('dotenv').config();
-const express = require('express');
+require("dotenv").config();
+const express = require("express");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Initialize Gemini with error handling
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ 
-  model: "gemini-1.5-flash",
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.0-flash",
   generationConfig: {
-    responseMimeType: "application/json"
-  }
+    responseMimeType: "application/json",
+  },
 });
 
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static("public"));
 
 // Enhanced prompt with JSON examples
 const PROMPT_TEMPLATE = `
@@ -140,7 +140,7 @@ Now analyze this message:
 """{message}"""
 `;
 
-app.post('/api/detect', async (req, res) => {
+app.post("/api/detect", async (req, res) => {
   try {
     const { message } = req.body;
     if (!message?.trim()) {
@@ -148,20 +148,25 @@ app.post('/api/detect', async (req, res) => {
     }
 
     // Generate with stricter configuration
-    const prompt = PROMPT_TEMPLATE.replace('{message}', sanitizeMessage(message));
+    const prompt = PROMPT_TEMPLATE.replace(
+      "{message}",
+      sanitizeMessage(message)
+    );
     const result = await model.generateContent(prompt, {
-      safetySettings: [{
-        category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-        threshold: "BLOCK_NONE"
-      }],
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_NONE",
+        },
+      ],
       generationConfig: {
-        temperature: 0.3 // Reduce creativity for more consistent JSON
-      }
+        temperature: 0.3, // Reduce creativity for more consistent JSON
+      },
     });
 
     const response = await result.response;
     const text = response.text();
-    
+
     // Robust JSON parsing with multiple fallbacks
     const jsonData = parseAIResponse(text);
     if (!jsonData) {
@@ -173,30 +178,34 @@ app.post('/api/detect', async (req, res) => {
       is_phishing: Boolean(jsonData.is_phishing),
       confidence: clampConfidence(jsonData.confidence),
       reasons: Array.isArray(jsonData.reasons) ? jsonData.reasons : [],
-      language: ["en","hi","mr"].includes(jsonData.language) ? jsonData.language : "en",
-      suggestions: Array.isArray(jsonData.suggestions) ? jsonData.suggestions : []
+      language: ["en", "hi", "mr"].includes(jsonData.language)
+        ? jsonData.language
+        : "en",
+      suggestions: Array.isArray(jsonData.suggestions)
+        ? jsonData.suggestions
+        : [],
     });
-
   } catch (error) {
     console.error("Full Error:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: "Analysis failed",
-      fallback: getFallbackResponse(error) // Provide basic analysis if AI fails
+      fallback: getFallbackResponse(error), // Provide basic analysis if AI fails
     });
   }
 });
 
 // Helper Functions
 function sanitizeMessage(text) {
-  return text.trim()
+  return text
+    .trim()
     .substring(0, 2000) // Limit length
     .replace(/"/g, "'") // Prevent JSON breakage
-    .replace(/\n/g, ' '); // Single line
+    .replace(/\n/g, " "); // Single line
 }
 
 function parseAIResponse(text) {
   const cleanText = text.trim();
-  
+
   // Try direct parse
   try {
     return JSON.parse(cleanText);
@@ -208,10 +217,11 @@ function parseAIResponse(text) {
         return JSON.parse(codeBlockMatch[1]);
       } catch (e) {}
     }
-    
+
     // Fallback 2: Find first/last braces
-    const jsonStart = Math.max(cleanText.indexOf('{'), cleanText.indexOf('['));
-    const jsonEnd = Math.max(cleanText.lastIndexOf('}'), cleanText.lastIndexOf(']')) + 1;
+    const jsonStart = Math.max(cleanText.indexOf("{"), cleanText.indexOf("["));
+    const jsonEnd =
+      Math.max(cleanText.lastIndexOf("}"), cleanText.lastIndexOf("]")) + 1;
     if (jsonStart >= 0 && jsonEnd > jsonStart) {
       try {
         return JSON.parse(cleanText.slice(jsonStart, jsonEnd));
@@ -232,8 +242,10 @@ function getFallbackResponse(error) {
     is_phishing: false,
     confidence: 50,
     reasons: ["AI analysis unavailable"],
-    suggestions: ["Please review manually"]
+    suggestions: ["Please review manually"],
   };
 }
 
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () =>
+  console.log(`Server running on http://localhost:${PORT}`)
+);
