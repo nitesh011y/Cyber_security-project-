@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 // Initialize Gemini with error handling
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash",
+  model: "gemini-2.5-flash-lite",
   generationConfig: {
     responseMimeType: "application/json",
   },
@@ -150,7 +150,7 @@ app.post("/api/detect", async (req, res) => {
     // Generate with stricter configuration
     const prompt = PROMPT_TEMPLATE.replace(
       "{message}",
-      sanitizeMessage(message)
+      sanitizeMessage(message),
     );
     const result = await model.generateContent(prompt, {
       safetySettings: [
@@ -247,5 +247,5 @@ function getFallbackResponse(error) {
 }
 
 app.listen(PORT, () =>
-  console.log(`Server running on http://localhost:${PORT}`)
+  console.log(`Server running on http://localhost:${PORT}`),
 );

@@ -69,4 +69,4 @@ form.addEventListener('submit', async (e) => {
   } finally {
     loading.classList.add('hidden');
   }
-});
+}); 
