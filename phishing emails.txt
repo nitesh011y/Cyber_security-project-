@@ -1,0 +1,63 @@
+//phishing emails
+
+
+Hello,
+
+We noticed unusual activity on your account and, for security reasons, access has been temporarily restricted.
+
+To restore full access, please verify your account immediately by clicking the link below:
+
+👉 [https://secure-verification-check[.]com/login](https://secure-verification-check[.]com/login)
+
+If verification is not completed within **24 hours**, your account may be permanently suspended.
+
+Thank you for your cooperation.
+
+Security Team
+Support Department
+(This is an automated message — do not reply)
+
+
+
+
+
+//spam 
+
+
+Hello Customer,
+
+🎉 Big Sale Alert! 🎉
+Don’t miss this exclusive opportunity to grab your favorite products at **FLAT 70% OFF**.
+
+🛒 Huge discounts on:
+
+* Electronics
+* Fashion
+* Home Appliances
+
+⏰ Hurry! Offer valid for a limited time only.
+
+👉 Visit our website now to claim your discount:
+[www.best-deals-offers-example[.]com](http://www.best-deals-offers-example[.]com)
+
+You are receiving this email because you subscribed to promotional updates.
+
+To unsubscribe, click here.
+
+Regards,
+Marketing Team
+Best Deals Online
+
+
+
+
+
+
+
+//trusted link
+
+https://web.whatsapp.com/
+
+//untrusted link
+
+http://secure-login-update.com
